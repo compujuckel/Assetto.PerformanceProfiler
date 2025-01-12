@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.IO.MemoryMappedFiles;
-using System.Runtime.Versioning;
 using DotNext.IO.MemoryMappedFiles;
 using DotNext.Runtime.InteropServices;
+using Serilog;
 
 namespace Assetto.PerformanceMeter;
 
@@ -21,7 +21,6 @@ public class PerformanceRecorder
         _pointer = new Pointer<PerformanceMeterMappedFile>(_accessor.Pointer.Address);
     }
     
-    [SupportedOSPlatform("windows")]
     public static bool TryOpen([NotNullWhen(true)] out PerformanceRecorder? recorder)
     {
         try
@@ -34,6 +33,22 @@ public class PerformanceRecorder
             recorder = null;
             return false;
         }
+    }
+
+    public static async Task<PerformanceRecorder> TryOpenAsync(CancellationToken token = default)
+    {
+        while (!token.IsCancellationRequested)
+        {
+            if (TryOpen(out var recorder))
+            {
+                return recorder;
+            }
+
+            await Task.Delay(1000, token);
+        }
+        
+        token.ThrowIfCancellationRequested();
+        return null!;
     }
 
     public List<SampleHolder> Record()
@@ -49,7 +64,7 @@ public class PerformanceRecorder
         {
             if (values.Reset == 0 && values.Counter > lastCtr)
             {
-                Console.WriteLine($"CTR: {values.Counter} CPU: {values.CpuTimeMs} GPU: {values.GpuTimeMs}");
+                Log.Debug("CTR: {Counter} CPU: {CpuTimeMs} GPU: {GpuTimeMs}", values.Counter, values.CpuTimeMs, values.GpuTimeMs);
                 lastCtr = values.Counter;
 
                 var sceneId = values.Scene;

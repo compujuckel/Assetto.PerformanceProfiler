@@ -1,34 +1,27 @@
-﻿using System.Runtime.InteropServices;
+﻿using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Serilog;
+using Serilog.Events;
 
 namespace Assetto.PerformanceMeter;
 
 class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            Console.WriteLine("Only Windows");
-            return;
-        }
-
-        Console.WriteLine("Hello, World!");
-
-        if (!PerformanceRecorder.TryOpen(out var recorder))
-        {
-            Console.WriteLine("Could not open performance recorder");
-            return;
-        }
-
-        var results = recorder.Record();
-
-        var cpuStats = PerfStatistics.Calculate(results[0].CpuTimeMs);
-        var drawCallStats = PerfStatistics.Calculate(results[0].DrawCalls);
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+            .WriteTo.Async(a => a.Console())
+            .CreateLogger();
         
-        Plotting.GenerateSignalPlot(results.Select(r => r.CpuTimeMs), "CPU Time (ms)", "cputime.png");
-        Plotting.GenerateSignalPlot(results.Select(r => r.GpuTimeMs), "GPU Time (ms)", "gputime.png");
-        Plotting.GenerateSignalPlot(results.Select(r => r.DrawCalls), "Draw Calls", "drawcalls.png");
-        Plotting.GenerateSignalPlot(results.Select(r => r.SceneTriangles), "Scene Triangles", "triangles.png");
-        Plotting.GenerateSignalPlot(results.Select(r => r.VramUsage), "VRAM Usage (MB)", "vram.png");
+        var builder = Host.CreateApplicationBuilder(args);
+        builder.Services.AddHostedService<PerformanceRecordingService>();
+        builder.Services.AddSerilog();
+        builder.Services.AddTransient<HtmlRenderer>();
+        
+        var host = builder.Build();
+        await host.RunAsync();
     }
 }

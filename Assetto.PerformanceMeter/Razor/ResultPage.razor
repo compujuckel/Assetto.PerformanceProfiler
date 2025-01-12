@@ -1,0 +1,135 @@
+@using System.Text.Json
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Assetto PerformanceMeter Results</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 768px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        table {
+            width: 100%;
+        }
+        td:first-child, th:first-child {
+            text-align: left;
+        }
+        td:not(:first-child), th:not(:first-child) {
+            text-align: right;
+            width: 70px;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
+            integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+<h1>Assetto PerformanceMeter Results</h1>
+
+<h2>CPU Time</h2>
+
+<canvas id="cpuTimeChart" width="400" height="200"></canvas>
+
+<StatisticsTable Results="Results" Accessor="s => s.CpuTimeStatistics"></StatisticsTable>
+
+<h2>GPU Time</h2>
+
+<canvas id="gpuTimeChart" width="400" height="200"></canvas>
+
+<StatisticsTable Results="Results" Accessor="s => s.GpuTimeStatistics"></StatisticsTable>
+
+<h2>Draw Calls</h2>
+
+<StatisticsTable Results="Results" Accessor="s => s.DrawCallsStatistics"></StatisticsTable>
+
+<h2>Triangles</h2>
+
+<StatisticsTable Results="Results" Accessor="s => s.SceneTrianglesStatistics"></StatisticsTable>
+
+<h2>VRAM Usage</h2>
+
+<StatisticsTable Results="Results" Accessor="s => s.VramUsageStatistics"></StatisticsTable>
+
+<script>
+    const results = @(ResultsJsonRaw);
+
+    function generateLabels(count) {
+        const labels = [];
+        for (let i = 1; i <= count; i++) {
+            labels.push(i);
+        }
+
+        return labels;
+    }
+
+    function drawChart(id, title, data) {
+        const ctx = document.getElementById(id).getContext("2d");
+
+        let maxLength = 0;
+        const datasets = [];
+        for (let i = 0; i < data.length; i++) {
+            const dataRow = data[i];
+
+            if (dataRow.length > maxLength) {
+                maxLength = dataRow.length
+            }
+
+            datasets.push({
+                label: `${i}`,
+                data: dataRow
+            });
+        }
+
+        console.log(datasets);
+
+        const chart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: generateLabels(maxLength),
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                elements: {
+                    point: {
+                        pointStyle: false
+                    },
+                    line: {
+                        borderWidth: 1
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            display: false,
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function drawCharts(data) {
+        drawChart("cpuTimeChart", "CPU Time (ms)", Object.keys(data.Scenes).map(k => data.Scenes[k].Samples.CpuTimeMs));
+        drawChart("gpuTimeChart", "GPU Time (ms)", Object.keys(data.Scenes).map(k => data.Scenes[k].Samples.GpuTimeMs));
+    }
+    
+    drawCharts(results);
+</script>
+</body>
+</html>
+
+@code
+{
+    [Parameter]
+    public required Results Results { get; set; }
+
+    private MarkupString ResultsJsonRaw => new(JsonSerializer.Serialize(Results));
+}
