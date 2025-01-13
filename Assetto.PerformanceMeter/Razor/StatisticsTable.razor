@@ -1,5 +1,5 @@
 <p>
-<table>
+<table class="stats">
     <thead>
     <tr>
         <th>Scene</th>
@@ -36,7 +36,7 @@
 
 @code
 {
-    [Parameter] public Results Results { get; set; }
+    [Parameter] public required Results Results { get; init; }
 
-    [Parameter] public Func<SceneResult, SampleStatistics> Accessor { get; set; }
+    [Parameter] public required Func<SceneResult, SampleStatistics> Accessor { get; init; }
 }

@@ -1,4 +1,6 @@
+@using System.Globalization
 @using System.Text.Json
+@using Humanizer
 
 <!DOCTYPE html>
 <html lang="en">
@@ -12,13 +14,14 @@
             margin-left: auto;
             margin-right: auto;
         }
+
         table {
             width: 100%;
         }
-        td:first-child, th:first-child {
+        table.stats td:first-child, table.stats th:first-child {
             text-align: left;
         }
-        td:not(:first-child), th:not(:first-child) {
+        table.stats td:not(:first-child), table.stats th:not(:first-child) {
             text-align: right;
             width: 70px;
         }
@@ -28,29 +31,60 @@
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
-<h1>Assetto PerformanceMeter Results</h1>
+<h1>Performance Results - @Results.Configuration.CarModel (@Results.Configuration.CarSkin) on @Results.Configuration.TrackName (@Results.Configuration.TrackLayout)</h1>
 
-<h2>CPU Time</h2>
+<h2>Metadata</h2>
+
+<table>
+    <tbody>
+    <tr>
+        <td>OS</td>
+        <td>@Results.SystemInfo.OS.Name (@Results.SystemInfo.OS.Version)</td>
+    </tr>
+    @foreach (var cpu in Results.SystemInfo.CPU)
+    {
+        <tr>
+            <td>CPU</td>
+            <td>@cpu.Name (@cpu.Cores Cores / @cpu.Threads Threads)</td>
+        </tr>
+    }
+    @foreach (var gpu in Results.SystemInfo.GPU)
+    {
+        <tr>
+            <td>GPU</td>
+            <td>@gpu.Name (@ByteSize.FromBytes(gpu.VRAM).Humanize("GB", CultureInfo.InvariantCulture), Driver @gpu.DriverVersion)</td>
+        </tr>
+    }
+    <tr>
+        <td>Memory</td>
+        <td>@(ByteSize.FromBytes(Results.SystemInfo.Memory.Size).Humanize("GB", CultureInfo.InvariantCulture))</td>
+    </tr>
+    </tbody>
+</table>
+
+<h2>Results</h2>
+
+<h3>CPU Time</h3>
 
 <canvas id="cpuTimeChart" width="400" height="200"></canvas>
 
 <StatisticsTable Results="Results" Accessor="s => s.CpuTimeStatistics"></StatisticsTable>
 
-<h2>GPU Time</h2>
+<h3>GPU Time</h3>
 
 <canvas id="gpuTimeChart" width="400" height="200"></canvas>
 
 <StatisticsTable Results="Results" Accessor="s => s.GpuTimeStatistics"></StatisticsTable>
 
-<h2>Draw Calls</h2>
+<h3>Draw Calls</h3>
 
 <StatisticsTable Results="Results" Accessor="s => s.DrawCallsStatistics"></StatisticsTable>
 
-<h2>Triangles</h2>
+<h3>Triangles</h3>
 
 <StatisticsTable Results="Results" Accessor="s => s.SceneTrianglesStatistics"></StatisticsTable>
 
-<h2>VRAM Usage</h2>
+<h3>VRAM Usage</h3>
 
 <StatisticsTable Results="Results" Accessor="s => s.VramUsageStatistics"></StatisticsTable>
 
@@ -71,16 +105,15 @@
 
         let maxLength = 0;
         const datasets = [];
-        for (let i = 0; i < data.length; i++) {
-            const dataRow = data[i];
+        for (const dataRow of data) {
 
-            if (dataRow.length > maxLength) {
-                maxLength = dataRow.length
+            if (dataRow.data.length > maxLength) {
+                maxLength = dataRow.data.length
             }
 
             datasets.push({
-                label: `${i}`,
-                data: dataRow
+                label: dataRow.name,
+                data: dataRow.data
             });
         }
 
@@ -117,10 +150,10 @@
     }
 
     function drawCharts(data) {
-        drawChart("cpuTimeChart", "CPU Time (ms)", Object.keys(data.Scenes).map(k => data.Scenes[k].Samples.CpuTimeMs));
-        drawChart("gpuTimeChart", "GPU Time (ms)", Object.keys(data.Scenes).map(k => data.Scenes[k].Samples.GpuTimeMs));
+        drawChart("cpuTimeChart", "CPU Time (ms)", Object.entries(data.Scenes).map(([k, v]) => { return { name: k, data: v.Samples.CpuTimeMs } }));
+        drawChart("gpuTimeChart", "GPU Time (ms)", Object.entries(data.Scenes).map(([k, v]) => { return { name: k, data: v.Samples.GpuTimeMs } }));
     }
-    
+
     drawCharts(results);
 </script>
 </body>

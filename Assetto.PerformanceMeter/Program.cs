@@ -15,11 +15,15 @@ class Program
             .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
             .WriteTo.Async(a => a.Console())
             .CreateLogger();
+
+        var configuration = Configuration.FromFile("configuration.yml");
         
         var builder = Host.CreateApplicationBuilder(args);
-        builder.Services.AddHostedService<PerformanceRecordingService>();
+        builder.Services.AddHostedService<MainService>();
         builder.Services.AddSerilog();
         builder.Services.AddTransient<HtmlRenderer>();
+        builder.Services.AddSingleton<SystemInfoService>();
+        builder.Services.AddSingleton(configuration);
         
         var host = builder.Build();
         await host.RunAsync();

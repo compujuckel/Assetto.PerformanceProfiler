@@ -1,6 +1,6 @@
 ﻿namespace Assetto.PerformanceMeter;
 
-public class ACLauncherConfigs
+public class ACLauncherConfig
 {
     public static string GetRaceCfg(string track, string layout, string car, string skin)
     {

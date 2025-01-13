@@ -4,16 +4,16 @@ namespace Assetto.PerformanceMeter;
 
 public class ACLauncher
 {
-    private void WriteRaceCfg()
+    private void WriteRaceCfg(string track, string layout, string car, string skin)
     {
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Assetto Corsa", "cfg");
-        File.WriteAllText(Path.Join(path, "race_perfmeter.ini"), ACLauncherConfigs.GetRaceCfg("endlessfloor", "", "amy_honda_ek9_turbo", ""));
+        File.WriteAllText(Path.Join(path, "race_perfmeter.ini"), ACLauncherConfig.GetRaceCfg(track, layout, car, skin));
     }
 
-    public async Task RunAndWaitAsync(CancellationToken token = default)
+    public async Task RunAndWaitAsync(string track, string layout, string car, string skin, CancellationToken token = default)
     {
-        var acRoot = @"C:\Program Files (x86)\Steam\steamapps\common\assettocorsa";
-        WriteRaceCfg();
+        const string acRoot = @"C:\Program Files (x86)\Steam\steamapps\common\assettocorsa";
+        WriteRaceCfg(track, layout, car, skin);
 
         var process = Process.Start(new ProcessStartInfo
         {
