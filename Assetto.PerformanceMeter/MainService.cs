@@ -1,24 +1,20 @@
 ﻿using System.Text.Json;
-using Assetto.PerformanceMeter.Razor;
 using Microsoft.Extensions.Hosting;
 
 namespace Assetto.PerformanceMeter;
 
 public class MainService : BackgroundService
 {
-    private readonly RazorRenderer _renderer;
     private readonly SystemInfoService _systemInfoService;
     private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly Configuration _configuration;
     private readonly ExcelReportGenerator _reportGenerator;
 
-    public MainService(RazorRenderer renderer,
-        IHostApplicationLifetime applicationLifetime,
+    public MainService(IHostApplicationLifetime applicationLifetime,
         SystemInfoService systemInfoService,
         Configuration configuration, 
         ExcelReportGenerator reportGenerator)
     {
-        _renderer = renderer;
         _applicationLifetime = applicationLifetime;
         _systemInfoService = systemInfoService;
         _configuration = configuration;
@@ -59,12 +55,13 @@ public class MainService : BackgroundService
             
             await File.WriteAllTextAsync($"results_{runConfig.TrackName}-{runConfig.TrackLayout}_{runConfig.CarModel}-{runConfig.CarSkin}.html", html, stoppingToken);
         }*/
-        
-        _reportGenerator.GenerateBatch(batchResults, "batch_results.xlsx");
-        
-        var batchResultsHtml = await _renderer.RenderToStringAsync<BatchResultsPage>(new { Results = batchResults });
-        await File.WriteAllTextAsync("batch_results.html", batchResultsHtml, stoppingToken);
 
+        await using (var jsonFile = File.Create("batch_results.json"))
+        {
+            await JsonSerializer.SerializeAsync(jsonFile, batchResults, JsonSerializerOptions.Default, stoppingToken);
+        }
+
+        _reportGenerator.GenerateBatch(batchResults, "batch_results.xlsx");
         _applicationLifetime.StopApplication();
     }
 }
