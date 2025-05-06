@@ -22,6 +22,8 @@ class Program
         builder.Services.AddHostedService<MainService>();
         builder.Services.AddSerilog();
         builder.Services.AddTransient<HtmlRenderer>();
+        builder.Services.AddSingleton<RazorRenderer>();
+        builder.Services.AddSingleton<ExcelReportGenerator>();
         builder.Services.AddSingleton<SystemInfoService>();
         builder.Services.AddSingleton(configuration);
         

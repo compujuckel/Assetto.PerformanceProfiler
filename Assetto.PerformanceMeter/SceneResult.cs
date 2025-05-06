@@ -2,12 +2,14 @@
 
 public class SceneResult
 {
-    public SampleHolder Samples { get; }
-    public SampleStatistics CpuTimeStatistics { get; }
-    public SampleStatistics GpuTimeStatistics { get; }
-    public SampleStatistics DrawCallsStatistics { get; }
-    public SampleStatistics SceneTrianglesStatistics { get; }
-    public SampleStatistics VramUsageStatistics { get; }
+    public SampleHolder Samples { get; init; }
+    public SampleStatistics CpuTimeStatistics { get; init; }
+    public SampleStatistics GpuTimeStatistics { get; init; }
+    public SampleStatistics DrawCallsStatistics { get; init; }
+    public SampleStatistics SceneTrianglesStatistics { get; init; }
+    public SampleStatistics VramUsageStatistics { get; init; }
+    
+    public SceneResult() {}
 
     public SceneResult(SampleHolder samples)
     {

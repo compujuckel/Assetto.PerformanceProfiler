@@ -1,0 +1,34 @@
+﻿@using System.Globalization
+@using Humanizer
+
+<table>
+    <tbody>
+    <tr>
+        <td>OS</td>
+        <td>@Info.OS.Name (@Info.OS.Version)</td>
+    </tr>
+    @foreach (var cpu in Info.CPU)
+    {
+        <tr>
+            <td>CPU</td>
+            <td>@cpu.Name (@cpu.Cores Cores / @cpu.Threads Threads)</td>
+        </tr>
+    }
+    @foreach (var gpu in Info.GPU)
+    {
+        <tr>
+            <td>GPU</td>
+            <td>@gpu.Name (@ByteSize.FromBytes(gpu.VRAM).Humanize("GB", CultureInfo.InvariantCulture), Driver @gpu.DriverVersion)</td>
+        </tr>
+    }
+    <tr>
+        <td>Memory</td>
+        <td>@(ByteSize.FromBytes(Info.Memory.Size).Humanize("GB", CultureInfo.InvariantCulture))</td>
+    </tr>
+    </tbody>
+</table>
+
+@code
+{
+    [Parameter] public required SystemInfo Info { get; set; }
+}

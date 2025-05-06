@@ -35,32 +35,7 @@
 
 <h2>Metadata</h2>
 
-<table>
-    <tbody>
-    <tr>
-        <td>OS</td>
-        <td>@Results.SystemInfo.OS.Name (@Results.SystemInfo.OS.Version)</td>
-    </tr>
-    @foreach (var cpu in Results.SystemInfo.CPU)
-    {
-        <tr>
-            <td>CPU</td>
-            <td>@cpu.Name (@cpu.Cores Cores / @cpu.Threads Threads)</td>
-        </tr>
-    }
-    @foreach (var gpu in Results.SystemInfo.GPU)
-    {
-        <tr>
-            <td>GPU</td>
-            <td>@gpu.Name (@ByteSize.FromBytes(gpu.VRAM).Humanize("GB", CultureInfo.InvariantCulture), Driver @gpu.DriverVersion)</td>
-        </tr>
-    }
-    <tr>
-        <td>Memory</td>
-        <td>@(ByteSize.FromBytes(Results.SystemInfo.Memory.Size).Humanize("GB", CultureInfo.InvariantCulture))</td>
-    </tr>
-    </tbody>
-</table>
+<SystemInfoTable Info="Results.SystemInfo"></SystemInfoTable>
 
 <h2>Results</h2>
 

@@ -2,11 +2,11 @@
 
 public class SampleHolder
 {
-    public List<double> CpuTimeMs { get; } = [];
-    public List<double> GpuTimeMs { get; } = [];
-    public List<double> DrawCalls { get; } = [];
-    public List<double> SceneTriangles { get; } = [];
-    public List<double> VramUsage { get; } = [];
+    public List<double> CpuTimeMs { get; init; } = [];
+    public List<double> GpuTimeMs { get; init; } = [];
+    public List<double> DrawCalls { get; init; } = [];
+    public List<double> SceneTriangles { get; init; } = [];
+    public List<double> VramUsage { get; init; } = [];
 
     public void Record(in PerformanceMeterMappedFile meter)
     {
