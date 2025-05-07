@@ -48,9 +48,15 @@ public class ACLauncherConfig
                 ALLOWED_TYRES_OUT=-1
 
                 [LIGHTING]
+                SUN_ANGLE=104.00
+                TIME_MULT=0.0
                 CLOUD_SPEED=0
-                SUN_ANGLE=-16.00
-                TIME_MULT=0
+                __TRACK_GEOTAG_LONG=12.20722
+                __TRACK_TIMEZONE_BASE_OFFSET=3600
+                __TRACK_TIMEZONE_DTS=1
+                __CM_DATE=1733407558.65794
+                __CM_WEATHER_TYPE=15
+                __CM_WEATHER_CONTROLLER=base
 
                 [OPTIONS]
                 USE_MPH=0

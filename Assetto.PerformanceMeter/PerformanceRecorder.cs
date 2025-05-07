@@ -82,7 +82,7 @@ public class PerformanceRecorder
                 sceneResults[sceneId].Record(in values);
             }
 
-            Thread.Sleep(10);
+            Thread.Yield();
         }
         
         return sceneResults;

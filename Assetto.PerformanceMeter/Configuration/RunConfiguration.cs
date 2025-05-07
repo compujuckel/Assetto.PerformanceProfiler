@@ -1,4 +1,4 @@
-﻿namespace Assetto.PerformanceMeter;
+﻿namespace Assetto.PerformanceMeter.Configuration;
 
 public class RunConfiguration
 {

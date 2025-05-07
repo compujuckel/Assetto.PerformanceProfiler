@@ -1,4 +1,6 @@
-﻿namespace Assetto.PerformanceMeter;
+﻿using Assetto.PerformanceMeter.Configuration;
+
+namespace Assetto.PerformanceMeter;
 
 public class BatchSceneResults
 {

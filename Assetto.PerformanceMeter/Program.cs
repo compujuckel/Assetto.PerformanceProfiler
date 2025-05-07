@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿using Assetto.PerformanceMeter.Configuration;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -6,9 +7,9 @@ using Serilog.Events;
 
 namespace Assetto.PerformanceMeter;
 
-class Program
+public static class Program
 {
-    static async Task Main(string[] args)
+    public static async Task Main(string[] args)
     {
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
@@ -16,7 +17,7 @@ class Program
             .WriteTo.Async(a => a.Console())
             .CreateLogger();
 
-        var configuration = Configuration.FromFile("configuration.yml");
+        var configuration = MainConfiguration.FromFile("configuration.yml");
         
         var builder = Host.CreateApplicationBuilder(args);
         builder.Services.AddHostedService<MainService>();
