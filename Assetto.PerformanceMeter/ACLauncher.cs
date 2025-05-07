@@ -16,12 +16,12 @@ public class ACLauncher
         return @"C:\Program Files (x86)\Steam\steamapps\common\assettocorsa";
     }
 
-    public void WriteSceneConfiguration(List<SceneConfiguration> scenes)
+    public void WriteAppConfiguration(AppConfiguration configuration)
     {
-        var path = Path.Join(GetRootDirectory(), "apps/lua/PerformanceMeter/scenes.json");
+        var path = Path.Join(GetRootDirectory(), "apps/lua/ACPerformanceProfiler/scenes.json");
 
         using var file = File.Create(path);
-        JsonSerializer.Serialize(file, scenes, JsonSerializerOptions);
+        JsonSerializer.Serialize(file, configuration, JsonSerializerOptions);
     }
     
     private void WriteRaceCfg(string track, string layout, string car, string skin)

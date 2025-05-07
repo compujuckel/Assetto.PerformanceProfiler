@@ -28,12 +28,19 @@ public class MainService : BackgroundService
         var systemInfo = _systemInfoService.GetSystemInfo();
         var batchResults = new BatchResults(systemInfo);
         //var batchResults = JsonSerializer.Deserialize<BatchResults>(await File.ReadAllTextAsync("batch_results.json", stoppingToken))!;
-        
-        foreach (var runConfig in _configuration.GetRunConfigurations())
+
+        var runConfigurations = _configuration.GetRunConfigurations().ToList();
+        int i = 1;
+        foreach (var runConfig in runConfigurations)
         {
             Log.Information("Launching Assetto Corsa...");
             var launcher = new ACLauncher();
-            launcher.WriteSceneConfiguration(runConfig.Scenes);
+            launcher.WriteAppConfiguration(new AppConfiguration
+            {
+                CurrentRun = i,
+                TotalRuns = runConfigurations.Count,
+                Scenes = runConfig.Scenes
+            });
             var assettoCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
             var assettoTask = launcher.RunAndWaitAsync(runConfig.TrackName, runConfig.TrackLayout, runConfig.CarModel, runConfig.CarSkin, assettoCts.Token);
 
@@ -53,6 +60,8 @@ public class MainService : BackgroundService
             Log.Information("Generating report...");
             var result = new Results(runConfig, samples, systemInfo);
             batchResults.AddResult(result);
+
+            i++;
         }
 
         await using (var jsonFile = File.Create("batch_results.json"))
