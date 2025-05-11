@@ -25,7 +25,7 @@ public class PerformanceRecorder
     {
         try
         {
-            recorder = new PerformanceRecorder(MemoryMappedFile.OpenExisting("Assetto.PerformanceProfiler.v5", MemoryMappedFileRights.ReadWrite));
+            recorder = new PerformanceRecorder(MemoryMappedFile.OpenExisting("Assetto.PerformanceProfiler.v1", MemoryMappedFileRights.ReadWrite));
             return true;
         }
         catch (FileNotFoundException)
@@ -51,7 +51,7 @@ public class PerformanceRecorder
         return null!;
     }
 
-    public List<SampleHolder> Record()
+    public List<SampleHolder> Record(CancellationToken token = default)
     {
         ref var values = ref CurrentValues;
 
@@ -60,7 +60,7 @@ public class PerformanceRecorder
         values.Reset = 1;
         long lastCtr = 0;
         int lastSceneId = 0;
-        while (true)
+        while (!token.IsCancellationRequested)
         {
             if (values.Reset == 0 && values.Counter > lastCtr)
             {
@@ -83,6 +83,12 @@ public class PerformanceRecorder
             }
 
             Thread.Sleep(1);
+        }
+
+        if (token.IsCancellationRequested && sceneResults.Count > 0)
+        {
+            // Discard incomplete samples
+            sceneResults.RemoveAt(sceneResults.Count - 1);
         }
         
         return sceneResults;

@@ -41,32 +41,36 @@ public class MainService : BackgroundService
                 TotalRuns = runConfigurations.Count,
                 Scenes = runConfig.Scenes
             });
-            var assettoCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+            using var assettoCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
             var assettoTask = launcher.RunAndWaitAsync(runConfig.TrackName, runConfig.TrackLayout, runConfig.CarModel, runConfig.CarSkin, assettoCts.Token);
 
             Log.Information("Connecting to Assetto Corsa...");
-            var sharedMemCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
-            sharedMemCts.CancelAfter(300000);
-            var recorder = await PerformanceRecorder.TryOpenAsync(sharedMemCts.Token);
+            PerformanceRecorder recorder;
+            using (var sharedMemCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken))
+            {
+                sharedMemCts.CancelAfter(30_000);
+                recorder = await PerformanceRecorder.TryOpenAsync(sharedMemCts.Token);
+            }
 
             Log.Information("Recording...");
-            var samples = recorder.Record();
+            var samples = recorder.Record(assettoCts.Token);
 
             Log.Information("Shutting down Assetto Corsa...");
             await assettoCts.CancelAsync();
             await assettoTask;
-
-
-            Log.Information("Generating report...");
+            
             var result = new Results(runConfig, samples, systemInfo);
             batchResults.AddResult(result);
+
+            if (stoppingToken.IsCancellationRequested) break;
 
             i++;
         }
 
         await using (var jsonFile = File.Create("batch_results.json"))
         {
-            await JsonSerializer.SerializeAsync(jsonFile, batchResults, JsonSerializerOptions.Default, stoppingToken);
+            // Do not pass stoppingToken so report is still generated when closing application
+            await JsonSerializer.SerializeAsync(jsonFile, batchResults, JsonSerializerOptions.Default, CancellationToken.None);
         }
 
         _reportGenerator.GenerateBatch(batchResults, "batch_results.xlsx");
