@@ -24,6 +24,7 @@ public class MainConfiguration
             {
                 CarModel = car.Model,
                 CarSkin = car.Skin,
+                CarRenameTo = car.RenameTo,
                 TrackName = track.Name,
                 TrackLayout = track.Layout,
                 Scenes = Scenes

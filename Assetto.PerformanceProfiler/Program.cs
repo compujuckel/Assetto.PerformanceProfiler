@@ -1,5 +1,4 @@
 ﻿using Assetto.PerformanceProfiler.Configuration;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -22,10 +21,16 @@ public static class Program
         var builder = Host.CreateApplicationBuilder(args);
         builder.Services.AddHostedService<MainService>();
         builder.Services.AddSerilog();
-        builder.Services.AddTransient<HtmlRenderer>();
         builder.Services.AddSingleton<ExcelReportGenerator>();
         builder.Services.AddSingleton<SystemInfoService>();
+        builder.Services.AddSingleton<ACLauncher>();
         builder.Services.AddSingleton(configuration);
+        
+        builder.Services.AddSingleton<ProfilerRun.ProfilerRunFactory>(sp =>
+        {
+            var launcher = sp.GetRequiredService<ACLauncher>();
+            return (runIndex, totalRuns, config) => new ProfilerRun(runIndex, totalRuns, config, launcher);
+        });
         
         var host = builder.Build();
         await host.RunAsync();

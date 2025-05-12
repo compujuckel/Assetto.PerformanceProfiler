@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Hosting;
-using Serilog;
 using Assetto.PerformanceProfiler.Configuration;
 
 namespace Assetto.PerformanceProfiler;
@@ -11,16 +10,19 @@ public class MainService : BackgroundService
     private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly MainConfiguration _configuration;
     private readonly ExcelReportGenerator _reportGenerator;
+    private readonly ProfilerRun.ProfilerRunFactory _profilerRunFactory;
 
     public MainService(IHostApplicationLifetime applicationLifetime,
         SystemInfoService systemInfoService,
         MainConfiguration configuration, 
-        ExcelReportGenerator reportGenerator)
+        ExcelReportGenerator reportGenerator,
+        ProfilerRun.ProfilerRunFactory profilerRunFactory)
     {
         _applicationLifetime = applicationLifetime;
         _systemInfoService = systemInfoService;
         _configuration = configuration;
         _reportGenerator = reportGenerator;
+        _profilerRunFactory = profilerRunFactory;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -33,33 +35,9 @@ public class MainService : BackgroundService
         int i = 1;
         foreach (var runConfig in runConfigurations)
         {
-            Log.Information("Launching Assetto Corsa...");
-            var launcher = new ACLauncher();
-            launcher.WriteAppConfiguration(new AppConfiguration
-            {
-                CurrentRun = i,
-                TotalRuns = runConfigurations.Count,
-                Scenes = runConfig.Scenes
-            });
-            using var assettoCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
-            var assettoTask = launcher.RunAndWaitAsync(runConfig.TrackName, runConfig.TrackLayout, runConfig.CarModel, runConfig.CarSkin, assettoCts.Token);
-
-            Log.Information("Connecting to Assetto Corsa...");
-            PerformanceRecorder recorder;
-            using (var sharedMemCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken))
-            {
-                sharedMemCts.CancelAfter(30_000);
-                recorder = await PerformanceRecorder.TryOpenAsync(sharedMemCts.Token);
-            }
-
-            Log.Information("Recording...");
-            var samples = recorder.Record(assettoCts.Token);
-
-            Log.Information("Shutting down Assetto Corsa...");
-            await assettoCts.CancelAsync();
-            await assettoTask;
+            using var profiler = _profilerRunFactory(i, runConfigurations.Count, runConfig);
             
-            var result = new Results(runConfig, samples, systemInfo);
+            var result = await profiler.RunAsync(stoppingToken);
             batchResults.AddResult(result);
 
             if (stoppingToken.IsCancellationRequested) break;

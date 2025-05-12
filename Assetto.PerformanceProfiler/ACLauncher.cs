@@ -8,6 +8,7 @@ public class ACLauncher
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
     {
+        // Required for Vector3
         IncludeFields = true
     };
     
