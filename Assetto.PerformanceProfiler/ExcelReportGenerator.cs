@@ -39,6 +39,7 @@ public class ExcelReportGenerator
 
     private static void AddSummaryWorksheet(XLWorkbook wb, BatchResults results)
     {
+        ReadOnlySpan<int> valueColumns = [2, 4, 6, 8, 10];
         ReadOnlySpan<int> percentageColumns = [3, 5, 7, 9, 11];
         
         var ws = wb.Worksheets.Add("Summary");
@@ -63,13 +64,22 @@ public class ExcelReportGenerator
         ws.Column(6).Style.NumberFormat.Format = Sheets.First(s => s.Name == "Draw Calls").NumberFormat;
         ws.Column(8).Style.NumberFormat.Format = Sheets.First(s => s.Name == "Scene Triangles").NumberFormat;
         ws.Column(10).Style.NumberFormat.Format = Sheets.First(s => s.Name == "VRAM Usage").NumberFormat;
-
+        
+        foreach (var col in valueColumns)
+        {
+            var column = ws.Column(col);
+            column.AddConditionalFormat().DataBar(XLColor.Red).LowestValue().HighestValue();
+            column.Width = 20;
+        }
+        
         // Percentages
         foreach (var col in percentageColumns)
         {
-            var style = ws.Column(col).Style;
+            var column = ws.Column(col);
+            var style = column.Style;
             style.NumberFormat.Format = "[Red]0.0%;-0.0%;0.0%";
             style.Font.Italic = true;
+            column.Width = 8;
         }
     }
     
@@ -136,15 +146,20 @@ public class ExcelReportGenerator
         // Values
         foreach (var col in valueColumns)
         {
-            ws.Column(col).Style.NumberFormat.Format = sheet.NumberFormat;
+            var column = ws.Column(col);
+            column.AddConditionalFormat().DataBar(XLColor.Red).LowestValue().HighestValue();
+            column.Style.NumberFormat.Format = sheet.NumberFormat;
+            column.Width = 20;
         }
 
         // Percentages
         foreach (var col in percentageColumns)
         {
-            var style = ws.Column(col).Style;
+            var column = ws.Column(col);
+            var style = column.Style;
             style.NumberFormat.Format = "[Red]0.0%;-0.0%;0.0%";
             style.Font.Italic = true;
+            column.Width = 8;
         }
     }
 
