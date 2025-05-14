@@ -3,7 +3,7 @@
 namespace Assetto.PerformanceProfiler;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public struct PerformanceMeterMappedFile
+public struct PerformanceProfilerMappedFile
 {
     public long Counter;
     public double CpuTimeMs;

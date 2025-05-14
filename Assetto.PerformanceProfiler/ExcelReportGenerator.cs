@@ -1,6 +1,8 @@
 ﻿using System.Text;
+using Assetto.PerformanceProfiler.Model;
 using ClosedXML.Attributes;
 using ClosedXML.Excel;
+using JetBrains.Annotations;
 using Serilog;
 
 namespace Assetto.PerformanceProfiler;
@@ -26,7 +28,7 @@ public class ExcelReportGenerator
 
             foreach (var sheet in Sheets)
             {
-                AddResultWorksheet(wb, sheet, results.Scenes);;
+                AddResultWorksheet(wb, sheet, results.Scenes);
             }
 
             wb.SaveAs(path);
@@ -83,7 +85,7 @@ public class ExcelReportGenerator
         }
     }
     
-    private static Dictionary<string, SceneResult> SummarizeResults(BatchResults batchResults)
+    private static Dictionary<string, ProfilerRunSceneResult> SummarizeResults(BatchResults batchResults)
     {
         var groupedResults = new Dictionary<string, SampleHolder>();
         var singleTrack = batchResults.Scenes.Values.First().Results
@@ -117,10 +119,10 @@ public class ExcelReportGenerator
             }
         }
 
-        return groupedResults.ToDictionary(result => result.Key, result => new SceneResult(result.Value));
+        return groupedResults.ToDictionary(result => result.Key, result => new ProfilerRunSceneResult(result.Value));
     }
 
-    private static void AddResultWorksheet(XLWorkbook wb, ExcelSheet sheet, Dictionary<string, BatchSceneResults> scenes)
+    private static void AddResultWorksheet(XLWorkbook wb, ExcelSheet sheet, Dictionary<string, BatchSceneResult> scenes)
     {
         ReadOnlySpan<int> valueColumns = [2, 4, 6, 8, 10, 12, 14, 16];
         ReadOnlySpan<int> percentageColumns = [3, 5, 7, 9, 11, 13, 15, 17];
@@ -187,7 +189,7 @@ public class ExcelReportGenerator
         return sb.ToString();
     }
     
-    private static List<ExcelSummaryRow> GenerateSummaryRows(Dictionary<string, SceneResult> results)
+    private static List<ExcelSummaryRow> GenerateSummaryRows(Dictionary<string, ProfilerRunSceneResult> results)
     {
         var ret = new List<ExcelSummaryRow>();
         
@@ -211,8 +213,8 @@ public class ExcelReportGenerator
     }
 
 
-    private static List<ExcelPerformanceRow> GenerateResultRows(List<BatchSceneResult> results,
-        Func<SceneResult, SampleStatistics> accessor)
+    private static List<ExcelPerformanceRow> GenerateResultRows(List<SceneResult> results,
+        Func<ProfilerRunSceneResult, SampleStatistics> accessor)
     {
         var singleTrack = results.DistinctBy(r => $"{r.TrackName}-{r.TrackLayout}").Count() == 1;
         var ret = new List<ExcelPerformanceRow>();
@@ -248,7 +250,7 @@ public class ExcelReportGenerator
         return ret;
     }
 
-    private static string GenerateRowName(BatchSceneResult result, bool singleTrack)
+    private static string GenerateRowName(SceneResult result, bool singleTrack)
     {
         var sb = new StringBuilder();
             
@@ -278,7 +280,9 @@ public class ExcelReportGenerator
     }
 }
 
-internal record ExcelSheet(string Name, Func<SceneResult, SampleStatistics> Accessor, string NumberFormat);
+internal record ExcelSheet(string Name, Func<ProfilerRunSceneResult, SampleStatistics> Accessor, string NumberFormat);
+
+[UsedImplicitly(ImplicitUseKindFlags.Access, ImplicitUseTargetFlags.WithMembers)]
 internal record ExcelSummaryRow(
     [property: XLColumn(Header = "Name")] string Name,
     [property: XLColumn(Header = "CPU")] double CPU,
@@ -291,4 +295,23 @@ internal record ExcelSummaryRow(
     [property: XLColumn(Header = "Triangles ±")] double SceneTrianglesP,
     [property: XLColumn(Header = "VRAM")] double VRAMUsage,
     [property: XLColumn(Header = "VRAM ±")] double VRAMUsageP);
-internal record ExcelPerformanceRow(string Name, double Avg, double AvgP, double Min, double MinP, double Max, double MaxP, double StdDev, double StdDevP, double P50, double P50P, double P75, double P75P, double P90, double P90P, double P99, double P99P);
+
+[UsedImplicitly(ImplicitUseKindFlags.Access, ImplicitUseTargetFlags.WithMembers)]
+internal record ExcelPerformanceRow(
+    string Name,
+    double Avg,
+    double AvgP,
+    double Min,
+    double MinP,
+    double Max,
+    double MaxP,
+    double StdDev,
+    double StdDevP,
+    double P50,
+    double P50P,
+    double P75,
+    double P75P,
+    double P90,
+    double P90P,
+    double P99,
+    double P99P);

@@ -10,15 +10,15 @@ public class PerformanceRecorder
 {
     private readonly MemoryMappedFile _file;
     private readonly IMappedMemory _accessor;
-    private readonly Pointer<PerformanceMeterMappedFile> _pointer;
+    private readonly Pointer<PerformanceProfilerMappedFile> _pointer;
 
-    private ref PerformanceMeterMappedFile CurrentValues => ref _pointer.Value;
+    private ref PerformanceProfilerMappedFile CurrentValues => ref _pointer.Value;
 
     private PerformanceRecorder(MemoryMappedFile file)
     {
         _file = file;
         _accessor = _file.CreateMemoryAccessor();
-        _pointer = new Pointer<PerformanceMeterMappedFile>(_accessor.Pointer.Address);
+        _pointer = new Pointer<PerformanceProfilerMappedFile>(_accessor.Pointer.Address);
     }
     
     public static bool TryOpen([NotNullWhen(true)] out PerformanceRecorder? recorder)

@@ -1,17 +1,19 @@
 ﻿using MathNet.Numerics.Statistics;
 
-namespace Assetto.PerformanceProfiler;
+namespace Assetto.PerformanceProfiler.Model;
 
 public class SampleStatistics
 {
-    public double P50 { get; init; }
-    public double P75 { get; init; }
-    public double P90 { get; init; }
-    public double P99 { get; init; }
-    public double Min { get; init; }
-    public double Max { get; init; }
-    public double Average { get; init; }
-    public double StdDev { get; init; }
+    public double P50 { get; private init; }
+    public double P75 { get; private init; }
+    public double P90 { get; private init; }
+    public double P99 { get; private init; }
+    public double Min { get; private init; }
+    public double Max { get; private init; }
+    public double Average { get; private init; }
+    public double StdDev { get; private init; }
+    
+    private SampleStatistics() { }
 
     public static SampleStatistics Calculate(List<double> data)
     {

@@ -1,4 +1,5 @@
 ﻿using Assetto.PerformanceProfiler.Configuration;
+using Assetto.PerformanceProfiler.Model;
 using Serilog;
 
 namespace Assetto.PerformanceProfiler;
@@ -24,7 +25,7 @@ public class ProfilerRun : IDisposable
         _totalRuns = totalRuns;
     }
 
-    public async Task<Results> RunAsync(CancellationToken token = default)
+    public async Task<ProfilerRunResult> RunAsync(CancellationToken token = default)
     {
         SetupRun();
         
@@ -57,7 +58,7 @@ public class ProfilerRun : IDisposable
         await assettoCts.CancelAsync();
         await assettoTask;
             
-        return new Results(_configuration, samples);
+        return new ProfilerRunResult(_configuration, samples);
     }
     
     private void SetupRun()

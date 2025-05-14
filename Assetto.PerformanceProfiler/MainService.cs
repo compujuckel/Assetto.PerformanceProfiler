@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Hosting;
 using Assetto.PerformanceProfiler.Configuration;
+using Assetto.PerformanceProfiler.Model;
 
 namespace Assetto.PerformanceProfiler;
 
@@ -29,7 +30,7 @@ public class MainService : BackgroundService
     {
         var systemInfo = _systemInfoService.GetSystemInfo();
         var batchResults = new BatchResults(systemInfo);
-        //var batchResults = JsonSerializer.Deserialize<BatchResults>(await File.ReadAllTextAsync("batch_results.json", stoppingToken))!;
+        //var batchResults = BatchResults.FromFile("batch_results.json");
 
         var runConfigurations = _configuration.GetRunConfigurations().ToList();
         int i = 1;
@@ -38,18 +39,14 @@ public class MainService : BackgroundService
             using var profiler = _profilerRunFactory(i, runConfigurations.Count, runConfig);
             
             var result = await profiler.RunAsync(stoppingToken);
-            batchResults.AddResult(result);
+            batchResults.AddRunResult(result);
 
             if (stoppingToken.IsCancellationRequested) break;
 
             i++;
         }
 
-        await using (var jsonFile = File.Create("batch_results.json"))
-        {
-            // Do not pass stoppingToken so report is still generated when closing application
-            await JsonSerializer.SerializeAsync(jsonFile, batchResults, JsonSerializerOptions.Default, CancellationToken.None);
-        }
+        batchResults.ToFile("batch_results.json");
 
         _reportGenerator.GenerateBatch(batchResults, "batch_results.xlsx");
         _applicationLifetime.StopApplication();
