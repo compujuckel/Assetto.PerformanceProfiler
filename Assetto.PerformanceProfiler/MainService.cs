@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Assetto.PerformanceProfiler.Configuration;
 using Assetto.PerformanceProfiler.Model;
+using Serilog;
 
 namespace Assetto.PerformanceProfiler;
 
@@ -32,18 +33,24 @@ public class MainService : BackgroundService
         var batchResults = new BatchResults(systemInfo);
         //var batchResults = BatchResults.FromFile("batch_results.json");
 
+        var startTime = DateTime.UtcNow;
+        DateTime? etaTimestamp = null;
         var runConfigurations = _configuration.GetRunConfigurations().ToList();
-        int i = 1;
-        foreach (var runConfig in runConfigurations)
+        for (var i = 0; i < runConfigurations.Count && !stoppingToken.IsCancellationRequested; i++)
         {
-            using var profiler = _profilerRunFactory(i, runConfigurations.Count, runConfig);
-            
+            var runConfig = runConfigurations[i];
+
+            long? etaTimestampUtc = etaTimestamp.HasValue ? new DateTimeOffset(etaTimestamp.Value).ToUnixTimeSeconds() : null;
+            using var profiler = _profilerRunFactory(i + 1, runConfigurations.Count, etaTimestampUtc, runConfig);
+
             var result = await profiler.RunAsync(stoppingToken);
             batchResults.AddRunResult(result);
-
-            if (stoppingToken.IsCancellationRequested) break;
-
-            i++;
+            
+            var timeElapsed = DateTime.UtcNow - startTime;
+            var timeRemaining = TimeSpan.FromSeconds(timeElapsed.TotalSeconds / (i + 1) * (runConfigurations.Count - i - 1));
+            etaTimestamp = DateTime.Now + timeRemaining;
+            
+            Log.Information("Run {RunIndex}/{TotalRuns} completed. Estimated finish time: {EtaTimestamp}", i + 1, runConfigurations.Count, etaTimestamp);
         }
 
         batchResults.ToFile("batch_results.json");

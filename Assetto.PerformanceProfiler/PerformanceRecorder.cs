@@ -64,7 +64,6 @@ public class PerformanceRecorder
         {
             if (values.Reset == 0 && values.Counter > lastCtr)
             {
-                Log.Debug("CTR: {Counter} CPU: {CpuTimeMs} GPU: {GpuTimeMs}", values.Counter, values.CpuTimeMs, values.GpuTimeMs);
                 lastCtr = values.Counter;
 
                 var sceneId = values.Scene;

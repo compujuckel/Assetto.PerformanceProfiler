@@ -10,19 +10,21 @@ public class ProfilerRun : IDisposable
     
     private readonly int _runIndex;
     private readonly int _totalRuns;
+    private readonly long? _etaTimestamp;
     private readonly RunConfiguration _configuration;
     
-    public delegate ProfilerRun ProfilerRunFactory(int runIndex, int totalRuns, RunConfiguration configuration);
+    public delegate ProfilerRun ProfilerRunFactory(int runIndex, int totalRuns, long? etaTimestamp, RunConfiguration configuration);
 
     private string? _existingCarFolder;
     private bool _hasRenamedCarFolder;
 
-    public ProfilerRun(int runIndex, int totalRuns, RunConfiguration configuration, ACLauncher launcher)
+    public ProfilerRun(int runIndex, int totalRuns, long? etaTimestamp, RunConfiguration configuration, ACLauncher launcher)
     {
         _configuration = configuration;
         _launcher = launcher;
         _runIndex = runIndex;
         _totalRuns = totalRuns;
+        _etaTimestamp = etaTimestamp;
     }
 
     public async Task<ProfilerRunResult> RunAsync(CancellationToken token = default)
@@ -34,6 +36,7 @@ public class ProfilerRun : IDisposable
         {
             CurrentRun = _runIndex,
             TotalRuns = _totalRuns,
+            EtaTimestamp = _etaTimestamp,
             Scenes = _configuration.Scenes
         });
         using var assettoCts = CancellationTokenSource.CreateLinkedTokenSource(token);

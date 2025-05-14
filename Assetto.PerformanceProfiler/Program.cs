@@ -29,7 +29,7 @@ public static class Program
         builder.Services.AddSingleton<ProfilerRun.ProfilerRunFactory>(sp =>
         {
             var launcher = sp.GetRequiredService<ACLauncher>();
-            return (runIndex, totalRuns, config) => new ProfilerRun(runIndex, totalRuns, config, launcher);
+            return (runIndex, totalRuns, etaTimestamp, config) => new ProfilerRun(runIndex, totalRuns, etaTimestamp, config, launcher);
         });
         
         var host = builder.Build();

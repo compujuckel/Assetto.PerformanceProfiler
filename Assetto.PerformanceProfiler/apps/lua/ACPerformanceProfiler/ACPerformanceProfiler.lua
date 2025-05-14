@@ -1,5 +1,3 @@
---if true then return end -- TODO
-
 local config
 local scenes
 
@@ -8,7 +6,7 @@ if io.fileExists(scenesPath) then
     config = JSON.parse(io.load(scenesPath))
     scenes = config.Scenes
     ac.debug("scenes", scenes)
-    --io.deleteFile(scenesPath)
+    io.deleteFile(scenesPath)
 end
 
 if scenes == nil then return end
@@ -41,7 +39,7 @@ local stats = {
 
 local i = 0
 local sceneId = 0
-local function updateMMF(dt)
+local function updateMMF()
     mmf.counter = i
     mmf.cpuTimeMs = stats.cpuTimeMs
     mmf.gpuTimeMs = stats.gpuTimeMs
@@ -59,7 +57,15 @@ local clock_currentSceneStart
 local clock_currentSceneEnd
 local clock
 local currentScene = 0
-local waitTime = 5
+
+local initialWaitTime = 5
+local defaultWaitTime = 2
+local waitTime = initialWaitTime
+
+local etaDate = "Unknown"
+if config.EtaTimestamp ~= nil then
+    etaDate = os.date("%a %d, %H:%M:%S", config.EtaTimestamp)
+end
 
 local function reset()
     ac.log("reset")
@@ -78,17 +84,23 @@ end
 ui.onExclusiveHUD(function (mode)
     if mode ~= "game" then return end
 
-    ui.toolWindow("PerformanceProfiler", vec2(10, 10), vec2(250, 200), function ()
+    ui.toolWindow("PerformanceProfiler", vec2(10, 10), vec2(250, 240), function ()
         ui.text("Performance Profiler running...")
         ui.text("Runs")
         ui.offsetCursorY(-5)
-        ui.progressBar(config.CurrentRun / config.TotalRuns, vec2(200, 15), string.format("%d / %d", config.CurrentRun, config.TotalRuns))
+        ui.progressBar(config.CurrentRun / config.TotalRuns, vec2(ui.availableSpaceX(), 15), string.format("%d / %d", config.CurrentRun, config.TotalRuns))
         ui.text("Scenes")
         ui.offsetCursorY(-5)
-        ui.progressBar(currentScene / #scenes, vec2(200, 15), string.format("%d / %d", currentScene, #scenes))
+        ui.progressBar(currentScene / #scenes, vec2(ui.availableSpaceX(), 15), string.format("%d / %d", currentScene, #scenes))
         ui.text("Current Scene")
         ui.offsetCursorY(-5)
-        ui.progressBar((clock - clock_currentSceneStart + waitTime) / (clock_currentSceneEnd - clock_currentSceneStart + waitTime), vec2(200, 15))
+        ui.progressBar((clock - clock_currentSceneStart + waitTime) / (clock_currentSceneEnd - clock_currentSceneStart + waitTime), vec2(ui.availableSpaceX(), 15))
+
+        ui.text(string.format("CPU: %.1f ms GPU: %.1f ms FPS: %d", stats.cpuTimeMs, stats.gpuTimeMs, sim.fps))
+        ui.text(string.format("Calls: %d Tris: %d", stats.drawCalls, stats.sceneTriangles))
+        ui.text(string.format("VRAM: %d MB", stats.vram))
+
+        ui.text(string.format("ETA: %s", etaDate))
     end)
 end)
 reset()
@@ -124,7 +136,7 @@ local function applyScene(scene)
     end
 end
 
-function script.update(dt)
+function script.update()
     if sim.isInMainMenu then
         ac.tryToStart(true)
     end
@@ -149,9 +161,15 @@ function script.update(dt)
         ac.log("end current scene")
         currentScene = currentScene + 1
 
+        if currentScene > 1 then
+            waitTime = defaultWaitTime
+        end
+
         if currentScene > #scenes then
             ac.log("starting over")
             currentScene = 1
+            sceneId = 0
+            updateMMF()
         end
 
         sceneId = currentScene - 1
@@ -168,5 +186,5 @@ function script.update(dt)
         return
     end
 
-    updateMMF(dt)
+    updateMMF()
 end
