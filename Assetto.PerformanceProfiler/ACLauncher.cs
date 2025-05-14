@@ -14,11 +14,13 @@ public class ACLauncher
     
     public string GetRootDirectory()
     {
+        // TODO Get from registry
         return @"C:\Program Files (x86)\Steam\steamapps\common\assettocorsa";
     }
 
     public void WriteAppConfiguration(AppConfiguration configuration)
     {
+        // TODO Detect when app is not present
         var path = Path.Join(GetRootDirectory(), "apps/lua/ACPerformanceProfiler/scenes.json");
 
         using var file = File.Create(path);
