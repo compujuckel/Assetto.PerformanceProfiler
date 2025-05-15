@@ -38,13 +38,25 @@
 
     <ItemGroup>
         <None Update="apps\**\*">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
     </ItemGroup>
 
-    <Target Name="AddManifestVersion" AfterTargets="AfterBuild">
+    <Target Name="AddManifestVersion" AfterTargets="Build">
         <PropertyGroup>
-            <ManifestPath>$(TargetDir)\apps\lua\ACPerformanceProfiler\manifest.ini</ManifestPath>
+            <ManifestPath>$(OutDir)\apps\lua\ACPerformanceProfiler\manifest.ini</ManifestPath>
+        </PropertyGroup>
+        <WriteLinesToFile
+                File="$(ManifestPath)"
+                Lines="$([System.IO.File]::ReadAllText($(ManifestPath)).Replace('{{VERSION}}','$(MinVerVersion)'))"
+                Overwrite="true"
+                Encoding="UTF-8"/>
+    </Target>
+
+    <!-- TODO duplicated, figure out how to remove this -->
+    <Target Name="AddManifestVersion2" AfterTargets="Publish">
+        <PropertyGroup>
+            <ManifestPath>$(PublishDir)\apps\lua\ACPerformanceProfiler\manifest.ini</ManifestPath>
         </PropertyGroup>
         <WriteLinesToFile
                 File="$(ManifestPath)"
