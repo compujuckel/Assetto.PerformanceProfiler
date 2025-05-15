@@ -68,17 +68,15 @@ public class ProfilerRun : IDisposable
     {
         if (_configuration.CarRenameTo != null)
         {
-            var carsFolder = Path.Join(_launcher.GetRootDirectory(), "content", "cars");
-            
-            var renamedPath = Path.Join(carsFolder, _configuration.CarRenameTo);
+            var renamedPath = Path.Join(_launcher.ContentCarsDirectory, _configuration.CarRenameTo);
             if (Directory.Exists(renamedPath))
             {
-                var existingCarFolder = Path.Join(carsFolder, $"{_configuration.CarRenameTo}_{Guid.NewGuid()}");
+                var existingCarFolder = Path.Join(_launcher.ContentCarsDirectory, $"{_configuration.CarRenameTo}_{Guid.NewGuid()}");
                 Directory.Move(renamedPath, existingCarFolder);
                 _existingCarFolder = existingCarFolder;
             }
             
-            var originalPath = Path.Join(carsFolder, _configuration.CarModel);
+            var originalPath = Path.Join(_launcher.ContentCarsDirectory, _configuration.CarModel);
             Directory.Move(originalPath, renamedPath);
             _hasRenamedCarFolder = true;
         }
@@ -88,10 +86,8 @@ public class ProfilerRun : IDisposable
     {
         if (_configuration.CarRenameTo != null)
         {
-            var carsFolder = Path.Join(_launcher.GetRootDirectory(), "content", "cars");
-            
-            var renamedPath = Path.Join(carsFolder, _configuration.CarRenameTo);
-            var originalPath = Path.Join(carsFolder, _configuration.CarModel);
+            var renamedPath = Path.Join(_launcher.ContentCarsDirectory, _configuration.CarRenameTo);
+            var originalPath = Path.Join(_launcher.ContentCarsDirectory, _configuration.CarModel);
 
             if (_hasRenamedCarFolder)
             {

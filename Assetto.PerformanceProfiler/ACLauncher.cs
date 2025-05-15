@@ -1,27 +1,40 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
 using Assetto.PerformanceProfiler.Configuration;
+using Microsoft.Win32;
 
 namespace Assetto.PerformanceProfiler;
 
 public class ACLauncher
 {
-    private static readonly JsonSerializerOptions JsonSerializerOptions = new JsonSerializerOptions
+    public string RootDirectory { get; }
+    public string AppDirectory { get; }
+    public string ContentCarsDirectory { get; }
+    
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
         // Required for Vector3
         IncludeFields = true
     };
     
-    public string GetRootDirectory()
+    public ACLauncher()
     {
-        // TODO Get from registry
-        return @"C:\Program Files (x86)\Steam\steamapps\common\assettocorsa";
+        RootDirectory = GetRootDirectory() ?? throw new InvalidOperationException("Could not find Assetto Corsa root directory");;
+        AppDirectory = Path.Join(RootDirectory, "apps", "lua", "ACPerformanceProfiler");
+        ContentCarsDirectory = Path.Join(RootDirectory, "content", "cars");
+    }
+    
+    private static string? GetRootDirectory()
+    {
+        var key = Registry.GetValue(
+            @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 244210", "InstallLocation", null);
+        return key?.ToString();
     }
 
     public void WriteAppConfiguration(AppConfiguration configuration)
     {
         // TODO Detect when app is not present
-        var path = Path.Join(GetRootDirectory(), "apps/lua/ACPerformanceProfiler/scenes.json");
+        var path = Path.Join(AppDirectory, "scenes.json");
 
         using var file = File.Create(path);
         JsonSerializer.Serialize(file, configuration, JsonSerializerOptions);
@@ -39,9 +52,9 @@ public class ACLauncher
 
         var process = Process.Start(new ProcessStartInfo
         {
-            FileName = Path.Join(GetRootDirectory(), "acs.exe"),
+            FileName = Path.Join(RootDirectory, "acs.exe"),
             UseShellExecute = false,
-            WorkingDirectory = GetRootDirectory(),
+            WorkingDirectory = RootDirectory,
             EnvironmentVariables =
             {
                 //["AC_CFG_PROGRAM_NAME"] = Key,
