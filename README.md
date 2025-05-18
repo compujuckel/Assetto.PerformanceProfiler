@@ -15,7 +15,8 @@ For each value, min/max/avg, 50/75/90/99th percentile and standard deviation are
 
 ## Installation
 
-Copy the `ACPerformanceProfiler` app included in the `apps/lua` folder into your Assetto Corsa Lua apps folder.
+* Download and unpack the [latest release](https://github.com/compujuckel/Assetto.PerformanceProfiler/releases/latest).
+* Copy the `ACPerformanceProfiler` app included in the `apps/lua` folder into your Assetto Corsa Lua apps folder.
 
 ## Configuration
 

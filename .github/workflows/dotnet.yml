@@ -1,0 +1,29 @@
+name: Build
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.x
+      - name: Publish
+        run: dotnet publish --runtime win-x64 -c Release
+      - name: Package
+        run: cd out-win-x64 && zip -r Assetto.PerformanceProfiler.zip * && cd ..
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: true
+          files: |
+            out-win-x64/Assetto.PerformanceProfiler.zip

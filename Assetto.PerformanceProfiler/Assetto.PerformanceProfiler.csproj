@@ -9,6 +9,7 @@
         <PublishSingleFile>true</PublishSingleFile>
         <SelfContained>true</SelfContained>
         <DebugType>embedded</DebugType>
+        <PublishDir>..\out-$(RuntimeIdentifier)\</PublishDir>
     </PropertyGroup>
 
     <ItemGroup>
@@ -51,6 +52,9 @@
                 Lines="$([System.IO.File]::ReadAllText($(ManifestPath)).Replace('{{VERSION}}','$(MinVerVersion)'))"
                 Overwrite="true"
                 Encoding="UTF-8"/>
+
+        <Copy SourceFiles="..\LICENSE.md" DestinationFolder="$(OutDir)"/>
+        <Copy SourceFiles="..\README.md" DestinationFolder="$(OutDir)"/>
     </Target>
 
     <!-- TODO duplicated, figure out how to remove this -->
@@ -63,6 +67,9 @@
                 Lines="$([System.IO.File]::ReadAllText($(ManifestPath)).Replace('{{VERSION}}','$(MinVerVersion)'))"
                 Overwrite="true"
                 Encoding="UTF-8"/>
+        
+        <Copy SourceFiles="..\LICENSE.md" DestinationFolder="$(PublishDir)"/>
+        <Copy SourceFiles="..\README.md" DestinationFolder="$(PublishDir)"/>
     </Target>
 
 </Project>
