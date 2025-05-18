@@ -1,5 +1,9 @@
 ﻿# Assetto Performance Profiler
 
+> [!NOTE]  
+> This was mainly developed for internal use and is still work in progress.
+> The functionality described below should work though, but no support will be provided.
+
 This is a tool to collect performance data for cars/tracks and generate an Excel report.  
 You can use it, for example, to compare the performance impact of different cars.
 
@@ -62,6 +66,10 @@ The game will be started once for each track-car combination. For the config abo
 * ...
 
 After the game is launched, the camera will run through the defined scenes while recording performance data.
+
+> [!WARNING]  
+> Make sure to close **all** programs and do not use your computer while running the profiler.
+> The results will be pretty much useless otherwise.
 
 ## Results
 
