@@ -26,10 +26,13 @@ Create a file called `configuration.yml` in the same folder as the .exe file.
 Tracks:
   - Name: track_one
   - Name: track_two
+    Layout: the_layout
 Cars:
   - Model: car_one
   - Model: car_two
+    Skin: the_skin
   - Model: car_three
+    Skin: another_skin
   - Model: car_three_updated
     RenameTo: car_three
 Scenes:
